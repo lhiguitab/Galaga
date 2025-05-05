@@ -9,7 +9,7 @@ class Ship {
        let y = Ay;
        let width = 16;       // Ancho aproximado basado en el dibujo
        let height = 16;      // Alto aproximado basado en el dibujo
-       let speed = 4;        // Velocidad de movimiento
+       let speed = 10;        // Velocidad de movimiento
        
        return this;
     }
