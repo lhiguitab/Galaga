@@ -1,5 +1,3 @@
-// Clase Main para iniciar el juego
-
 class Main {
     function void main() {
        var SpaceGame game;

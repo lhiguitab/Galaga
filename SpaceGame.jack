@@ -1,6 +1,4 @@
-// Juego tipo Galaga para Nand2Tetris
 // Archivo principal del juego
-
 class SpaceGame {
     field Ship ship;         // La nave espacial del jugador
     field int direction;     // Dirección actual del movimiento (-1: izquierda, 0: quieto, 1: derecha)

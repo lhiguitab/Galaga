@@ -1,5 +1,3 @@
-// Clase Ship para representar la nave del jugador
-
 class Ship {
     field int x, y;          // Posición de la nave
     field int width, height; // Dimensiones de la nave
