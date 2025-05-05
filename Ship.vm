@@ -178,3 +178,23 @@ call Memory.poke 2
 pop temp 0
 push constant 0
 return
+function Ship.getX 0
+push argument 0
+pop pointer 0
+push this 0
+return
+function Ship.getY 0
+push argument 0
+pop pointer 0
+push this 1
+return
+function Ship.getWidth 0
+push argument 0
+pop pointer 0
+push this 2
+return
+function Ship.getHeight 0
+push argument 0
+pop pointer 0
+push this 3
+return

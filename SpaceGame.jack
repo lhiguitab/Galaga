@@ -2,12 +2,19 @@
 class SpaceGame {
     field Ship ship;             // La nave espacial del jugador
     field EnemyFleet enemies;    // La flota de naves enemigas
+    field Array bullets;         // Array para almacenar los disparos activos
+    field int bulletCount;       // Número actual de disparos
+    field int maxBullets;        // Máximo número de disparos permitidos a la vez
     field int direction;         // Dirección actual del movimiento (-1: izquierda, 0: quieto, 1: derecha)
     field boolean exit;          // Flag para salir del juego
     field int enemyCount;        // Número de naves enemigas
+    field int cooldown;          // Tiempo de espera entre disparos
+    field int currentCooldown;   // Contador actual del tiempo de espera
 
     // Constructor
     constructor SpaceGame new() {
+        var int i;
+        
         // Inicializa la nave en el centro de la pantalla
         let ship = Ship.new(256, 220);  // x=256 (centro), y=220 (cerca del fondo)
         let direction = 0;
@@ -17,14 +24,97 @@ class SpaceGame {
         // Inicializa la flota de naves enemigas estáticas en la parte superior
         let enemies = EnemyFleet.new(enemyCount);
         
+        // Inicializa el sistema de disparos
+        let maxBullets = 10;     // Máximo 10 balas simultáneas
+        let bulletCount = 0;
+        let bullets = Array.new(maxBullets);
+        
+        // Inicializa todas las posiciones del array a null
+        let i = 0;
+        while (i < maxBullets) {
+            let bullets[i] = null;
+            let i = i + 1;
+        }
+        
+        // Configura el tiempo de espera entre disparos (cooldown)
+        let cooldown = 10;       // 10 ciclos de juego entre disparos
+        let currentCooldown = 0;
+        
         return this;
     }
 
     // Método para liberar memoria
     method void dispose() {
+        var int i;
+        var Bullet bullet;
+        
         do ship.dispose();
         do enemies.dispose();
+        
+        // Liberar la memoria de las balas
+        let i = 0;
+        while (i < maxBullets) {
+            if (~(bullets[i] = null)) {
+                let bullet = bullets[i];
+                do bullet.dispose();
+            }
+            let i = i + 1;
+        }
+        
+        do bullets.dispose();
         do Memory.deAlloc(this);
+        return;
+    }
+
+    // Método para disparar una bala
+    method void fireBullet() {
+        var int i;
+        var Bullet newBullet;
+        var Bullet oldBullet;
+        var Bullet currentBullet;
+        var boolean isBulletActive;
+        
+        // Si el cooldown no ha terminado, no dispares
+        if (currentCooldown > 0) {
+            return;
+        }
+        
+        // Busca una posición libre en el array de balas
+        let i = 0;
+        while (i < maxBullets) {
+            if (bullets[i] = null) {
+                // Si encontramos una posición vacía
+                
+                // Crea una nueva bala en la posición de la nave
+                let newBullet = Bullet.new(ship.getX() + 8, ship.getY() - 5);  // Ajusta según el tamaño de la nave
+                let bullets[i] = newBullet;
+                
+                // Reinicia el cooldown
+                let currentCooldown = cooldown;
+                
+                return;
+            } else {
+                // Comprueba si la bala está inactiva
+                let currentBullet = bullets[i];
+                let isBulletActive = currentBullet.isActive();
+                
+                if (~isBulletActive) {
+                    // Si hay una bala inactiva, libérala primero
+                    do currentBullet.dispose();
+                    
+                    // Crea una nueva bala en la posición de la nave
+                    let newBullet = Bullet.new(ship.getX() + 8, ship.getY() - 5);  // Ajusta según el tamaño de la nave
+                    let bullets[i] = newBullet;
+                    
+                    // Reinicia el cooldown
+                    let currentCooldown = cooldown;
+                    
+                    return;
+                }
+            }
+            let i = i + 1;
+        }
+        
         return;
     }
 
@@ -45,25 +135,67 @@ class SpaceGame {
         if (key = 81) {           // 'q' para salir
             let exit = true;
         }
+        if (key = 32) {           // Espacio para disparar
+            do fireBullet();
+        }
 
         return;
     }
 
     // Método para actualizar el estado del juego
     method void update() {
+        var int i;
+        var Bullet bullet;
+        
+        // Actualiza la posición de la nave según la dirección
         if (direction = -1) {
             do ship.moveLeft();
         }
         if (direction = 1) {
             do ship.moveRight();
         }
+        
+        // Actualiza las naves enemigas
         do enemies.update();
+        
+        // Actualiza las balas y comprueba colisiones
+        let i = 0;
+        while (i < maxBullets) {
+            if (~(bullets[i] = null)) {
+                let bullet = bullets[i];
+                if (bullet.isActive()) {
+                    do bullet.update();
+                    
+                    // Comprueba colisiones con enemigos
+                    do checkBulletCollisions(i);
+                }
+            }
+            let i = i + 1;
+        }
+        
+        // Reduce el contador de cooldown
+        if (currentCooldown > 0) {
+            let currentCooldown = currentCooldown - 1;
+        }
 
+        return;
+    }
+    
+    // Método para comprobar colisiones de una bala con los enemigos
+    method void checkBulletCollisions(int bulletIndex) {
+        // Este método debería comunicarse con la clase EnemyFleet
+        // para comprobar si una bala ha impactado con algún enemigo
+        
+        // Para implementar este método, necesitarías añadir métodos en la clase
+        // EnemyFleet que permitan comprobar colisiones con cada nave enemiga
         return;
     }
 
     // Método para dibujar la pantalla
     method void draw() {
+        var int i;
+        var Bullet bullet;
+        
         // Limpia la pantalla
         do Screen.clearScreen();
 
@@ -72,6 +204,18 @@ class SpaceGame {
         
         // Dibuja las naves enemigas
         do enemies.draw();
+        
+        // Dibuja las balas activas
+        let i = 0;
+        while (i < maxBullets) {
+            if (~(bullets[i] = null)) {
+                let bullet = bullets[i];
+                if (bullet.isActive()) {
+                    do bullet.draw();
+                }
+            }
+            let i = i + 1;
+        }
 
         // Espera un poco para que la animación sea visible
         do Sys.wait(50);

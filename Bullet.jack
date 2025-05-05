@@ -1,0 +1,100 @@
+class Bullet {
+    field int x, y;          // Posición del disparo
+    field int width, height; // Dimensiones del disparo
+    field int speed;         // Velocidad de movimiento
+    field boolean active;    // Indica si el disparo está activo o no
+    
+    // Constructor
+    constructor Bullet new(int Ax, int Ay) {
+        let x = Ax;
+        let y = Ay;
+        let width = 2;       // Ancho del disparo
+        let height = 5;      // Alto del disparo
+        let speed = 10;      // Velocidad de movimiento (más rápido que la nave)
+        let active = true;   // El disparo está activo al crearse
+        
+        return this;
+    }
+    
+    // Método para liberar memoria
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+    
+    // Método para actualizar la posición del disparo
+    method void update() {
+        if (active) {
+            let y = y - speed;
+            
+            // Desactivar el disparo si sale de la pantalla
+            if (y < 0) {
+                let active = false;
+            }
+        }
+        return;
+    }
+    
+    // Método para dibujar el disparo
+    method void draw() {
+        var int location;
+        
+        if (active) {
+            // Calcula la ubicación en memoria
+            let location = (y * 32) + (x / 16);
+            do drawBullet(location);
+        }
+        return;
+    }
+    
+    // Método para dibujar el sprite del disparo
+    method void drawBullet(int location) {
+        var int memAddress; 
+        let memAddress = 16384 + location;
+        
+        // Dibuja el sprite del disparo
+        do Memory.poke(memAddress, 6);       // 0000000000000110
+        do Memory.poke(memAddress + 32, 15); // 0000000000001111
+        do Memory.poke(memAddress + 64, 6);  // 0000000000000110
+        do Memory.poke(memAddress + 96, 6);  // 0000000000000110
+        do Memory.poke(memAddress + 128, 6); // 0000000000000110
+        
+        return;
+    }
+    
+    // Método para verificar si el disparo está activo
+    method boolean isActive() {
+        return active;
+    }
+    
+    // Método para desactivar el disparo
+    method void deactivate() {
+        let active = false;
+        return;
+    }
+    
+    // Comprueba si hay colisión con una nave enemiga
+    method boolean checkCollision(int enemyX, int enemyY, int enemyWidth, int enemyHeight) {
+        // Implementación simple de detección de colisiones
+        if (~active) {
+            return false;
+        }
+        
+        // Comprueba si hay solapamiento en ambos ejes
+        if ((x < (enemyX + enemyWidth)) & ((x + width) > enemyX) &
+            (y < (enemyY + enemyHeight)) & ((y + height) > enemyY)) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    // Getters para posición
+    method int getX() {
+        return x;
+    }
+    
+    method int getY() {
+        return y;
+    }
+}

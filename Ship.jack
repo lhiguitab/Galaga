@@ -67,4 +67,21 @@ class Ship {
        
        return;
     }
- }
+
+   // Getters para posición y dimensiones
+   method int getX() {
+      return x;
+  }
+  
+  method int getY() {
+      return y;
+  }
+  
+  method int getWidth() {
+      return width;
+  }
+  
+  method int getHeight() {
+      return height;
+  }
+}
