@@ -1,0 +1,83 @@
+// Juego tipo Galaga para Nand2Tetris
+// Archivo principal del juego
+
+class SpaceGame {
+    field Ship ship;         // La nave espacial del jugador
+    field int direction;     // Dirección actual del movimiento (-1: izquierda, 0: quieto, 1: derecha)
+    field boolean exit;      // Flag para salir del juego
+    
+    // Constructor
+    constructor SpaceGame new() {
+       // Inicializa la nave en el centro de la pantalla
+       let ship = Ship.new(256, 220);  // x=256 (centro), y=220 (cerca del fondo)
+       let direction = 0;
+       let exit = false;
+       
+       return this;
+    }
+    
+    // Método para liberar memoria
+    method void dispose() {
+       do ship.dispose();
+       do Memory.deAlloc(this);
+       return;
+    }
+    
+    // Método para manejar la entrada del teclado
+    method void handleInput() {
+       var char key;
+       let key = Keyboard.keyPressed();
+       
+       if (key = 130) {          // Flecha izquierda
+          let direction = -1;
+       }
+       if (key = 132) {          // Flecha derecha
+          let direction = 1;
+       }
+       if (key = 0) {            // No hay tecla presionada
+          let direction = 0;
+       }
+       if (key = 81) {           // 'q' para salir
+          let exit = true;
+       }
+       
+       return;
+    }
+    
+    // Método para actualizar el estado del juego
+    method void update() {
+       if (direction = -1) {
+          do ship.moveLeft();
+       }
+       if (direction = 1) {
+          do ship.moveRight();
+       }
+       
+       return;
+    }
+    
+    // Método para dibujar la pantalla
+    method void draw() {
+       // Limpia la pantalla
+       do Screen.clearScreen();
+       
+       // Dibuja la nave
+       do ship.draw();
+       
+       // Espera un poco para que la animación sea visible
+       do Sys.wait(50);
+       
+       return;
+    }
+    
+    // Método principal que ejecuta el juego
+    method void run() {
+       while (~exit) {
+          do handleInput();
+          do update();
+          do draw();
+       }
+       
+       return;
+    }
+ }

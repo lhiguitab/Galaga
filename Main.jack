@@ -1,0 +1,18 @@
+// Clase Main para iniciar el juego
+
+class Main {
+    function void main() {
+       var SpaceGame game;
+       
+       // Crea una nueva instancia del juego
+       let game = SpaceGame.new();
+       
+       // Ejecuta el juego
+       do game.run();
+       
+       // Libera la memoria cuando el juego termina
+       do game.dispose();
+       
+       return;
+    }
+ }

@@ -1,0 +1,72 @@
+// Clase Ship para representar la nave del jugador
+
+class Ship {
+    field int x, y;          // Posición de la nave
+    field int width, height; // Dimensiones de la nave
+    field int speed;         // Velocidad de movimiento
+    
+    // Constructor
+    constructor Ship new(int Ax, int Ay) {
+       let x = Ax;
+       let y = Ay;
+       let width = 16;       // Ancho aproximado basado en el dibujo
+       let height = 16;      // Alto aproximado basado en el dibujo
+       let speed = 4;        // Velocidad de movimiento
+       
+       return this;
+    }
+    
+    // Método para liberar memoria
+    method void dispose() {
+       do Memory.deAlloc(this);
+       return;
+    }
+    
+    // Método para mover la nave a la izquierda
+    method void moveLeft() {
+       if (x > speed) {  // Evita que la nave salga de la pantalla
+          let x = x - speed;
+       }
+       return;
+    }
+    
+    // Método para mover la nave a la derecha
+    method void moveRight() {
+       if ((x + width + speed) < 512) {  // Evita que la nave salga de la pantalla
+          let x = x + speed;
+       }
+       return;
+    }
+    
+    // Método para dibujar la nave
+    method void draw() {
+       var int memAddress;
+       var int location;
+       
+       // Calcula la ubicación en memoria basada en las coordenadas x,y
+       // La pantalla en Hack es de 512x256 píxeles, 32x16 palabras de 16 bits
+       let location = (y * 32) + (x / 16);
+       let memAddress = 16384 + location;
+       
+       // Dibuja la nave usando el patrón proporcionado
+       // Columna 0
+       do Memory.poke(memAddress, 384);
+       do Memory.poke(memAddress + 32, 384);
+       do Memory.poke(memAddress + 64, 384);
+       do Memory.poke(memAddress + 96, 960);
+       do Memory.poke(memAddress + 128, 5064);
+       do Memory.poke(memAddress + 160, 5064);
+       do Memory.poke(memAddress + 192, 6120);
+       do Memory.poke(memAddress + 224, -26647);
+       do Memory.poke(memAddress + 256, -26647);
+       do Memory.poke(memAddress + 288, -24583);
+       do Memory.poke(memAddress + 320, -24583);
+       do Memory.poke(memAddress + 352, -16387);
+       do Memory.poke(memAddress + 384, -1);
+       do Memory.poke(memAddress + 416, -4105);
+       do Memory.poke(memAddress + 448, -12877);
+       do Memory.poke(memAddress + 480, -32383);
+       
+       return;
+    }
+ }
