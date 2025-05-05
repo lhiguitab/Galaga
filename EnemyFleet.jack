@@ -1,0 +1,89 @@
+class EnemyFleet {
+    field Array enemies;     // Array de naves enemigas
+    field int enemyCount;    // Cantidad de naves enemigas
+    
+    // Constructor
+    constructor EnemyFleet new(int count) {
+        var int i, spacing, startX;
+        
+        let enemyCount = count;
+        let enemies = Array.new(enemyCount);
+        
+        // Calcula el espaciado entre las naves
+        let spacing = 512 / (enemyCount + 1);
+        
+        // Crea las naves enemigas distribuidas uniformemente en la parte superior
+        let i = 0;
+        while (i < enemyCount) {
+            let startX = spacing * (i + 1);
+            let enemies[i] = Enemy.new(startX, 30);  // Y = 30, en la parte superior de la pantalla
+            let i = i + 1;
+        }
+        
+        return this;
+    }
+    
+    // Método para liberar memoria
+    method void dispose() {
+        var int i;
+        var Enemy enemy;
+        
+        let i = 0;
+        while (i < enemyCount) {
+            let enemy = enemies[i];
+            do enemy.dispose();
+            let i = i + 1;
+        }
+        
+        do enemies.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
+    
+    // Método para actualizar el estado de las naves enemigas
+    method void update() {
+        return;
+    }
+    
+    // Método para dibujar todas las naves enemigas
+    method void draw() {
+        var int i;
+        var Enemy enemy;
+        
+        let i = 0;
+        while (i < enemyCount) {
+            let enemy = enemies[i];
+            if (enemy.isActive()) {
+                do enemy.draw();
+            }
+            let i = i + 1;
+        }
+        
+        return;
+    }
+    
+    // Método para verificar si todas las naves fueron destruidas
+    method boolean allDestroyed() {
+        var int i;
+        var Enemy enemy;
+        var boolean allDead;
+        
+        let allDead = true;
+        
+        let i = 0;
+        while (i < enemyCount) {
+            let enemy = enemies[i];
+            if (enemy.isActive()) {
+                let allDead = false;
+            }
+            let i = i + 1;
+        }
+        
+        return allDead;
+    }
+    
+    // Método para obtener una nave específica
+    method Enemy getEnemy(int index) {
+        return enemies[index];
+    }
+}

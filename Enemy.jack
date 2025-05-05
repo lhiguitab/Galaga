@@ -1,0 +1,79 @@
+class Enemy {
+    field int x, y;          // Posición de la nave enemiga
+    field int width, height; // Dimensiones de la nave
+    field int speed;         // Velocidad de movimiento
+    field boolean active;    // Indica si la nave está activa
+
+    // Constructor
+    constructor Enemy new(int Ax, int Ay) {
+        let x = Ax;
+        let y = Ay;
+        let width = 16;      // Ancho aproximado basado en el dibujo
+        let height = 16;     // Alto aproximado basado en el dibujo
+        let speed = 2;       // Velocidad de movimiento
+        let active = true;   // La nave está activa al crearse
+        
+        return this;
+    }
+
+    // Método para liberar memoria
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+
+    // Ya no necesitamos el método de movimiento
+    method void move() {
+        return;
+    }
+
+    // Método para dibujar la nave enemiga
+    method void draw() {
+        var int location;
+        
+        // Calcula la ubicación en memoria basada en las coordenadas x,y
+        let location = (y * 32) + (x / 16);
+        
+        // Dibuja la nave usando el patrón proporcionado
+        do Enemy.drawEnemy(location); 
+        
+        return;
+    }
+    
+    // Método estático para dibujar el sprite de la nave enemiga
+    function void drawEnemy(int location) {
+        var int memAddress;
+        let memAddress = 16384 + location;
+        
+        // column 0
+        do Memory.poke(memAddress, -15421);
+        do Memory.poke(memAddress + 32, -6169);
+        do Memory.poke(memAddress + 64, -1);
+        do Memory.poke(memAddress + 96, -1);
+        do Memory.poke(memAddress + 128, -1);
+        do Memory.poke(memAddress + 160, -1);
+        do Memory.poke(memAddress + 192, 32766);
+        do Memory.poke(memAddress + 224, 32766);
+        do Memory.poke(memAddress + 256, 16380);
+        do Memory.poke(memAddress + 288, 4080);
+        do Memory.poke(memAddress + 320, 4080);
+        do Memory.poke(memAddress + 352, 4080);
+        do Memory.poke(memAddress + 384, 2016);
+        do Memory.poke(memAddress + 416, 2016);
+        do Memory.poke(memAddress + 448, 384);
+        do Memory.poke(memAddress + 480, 384);
+        
+        return;
+    }
+    
+    // Getters
+    method int getX() { return x; }
+    method int getY() { return y; }
+    method boolean isActive() { return active; }
+    
+    // Setter para desactivar la nave
+    method void setInactive() {
+        let active = false;
+        return;
+    }
+}
