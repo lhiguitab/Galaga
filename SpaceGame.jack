@@ -183,11 +183,38 @@ class SpaceGame {
     
     // Método para comprobar colisiones de una bala con los enemigos
     method void checkBulletCollisions(int bulletIndex) {
-        // Este método debería comunicarse con la clase EnemyFleet
-        // para comprobar si una bala ha impactado con algún enemigo
+        var int i;
+        var Bullet bullet;
+        var Enemy enemy;
+        var boolean collision;
         
-        // Para implementar este método, necesitarías añadir métodos en la clase
-        // EnemyFleet que permitan comprobar colisiones con cada nave enemiga
+        // Obtener la bala actual
+        let bullet = bullets[bulletIndex];
+        
+        if (bullet.isActive()) {
+            // Comprobar colisión con cada enemigo activo
+            let i = 0;
+            while (i < enemyCount) {
+                let enemy = enemies.getEnemy(i);
+                
+                // Solo verificar colisión si el enemigo está activo
+                if (enemy.isActive()) {
+                    // Comprobar colisión entre la bala y este enemigo
+                    let collision = bullet.checkCollision(
+                        enemy.getX(), enemy.getY(), 16, 16
+                    );
+                    
+                    if (collision) {
+                        // Si hay colisión, desactivar tanto la bala como el enemigo
+                        do bullet.deactivate();
+                        do enemy.setInactive();
+                        return; // Una bala solo puede impactar a un enemigo
+                    }
+                }
+                
+                let i = i + 1;
+            }
+        }
         return;
     }
 
