@@ -1,6 +1,12 @@
 class EnemyFleet {
     field Array enemies;     // Array de naves enemigas
     field int enemyCount;    // Cantidad de naves enemigas
+    field int moveDirection; // Dirección de movimiento: 1 = derecha, -1 = izquierda
+    field int moveTimer;     // Temporizador para controlar velocidad de movimiento
+    field int moveDelay;     // Retraso entre movimientos
+    field int movePhase;     // Fase del movimiento zigzag: 0=derecha, 1=abajo, 2=izquierda, 3=abajo
+    field int horizontalStep;// Tamaño del paso horizontal
+    field int verticalStep;  // Tamaño del paso vertical
     
     // Constructor
     constructor EnemyFleet new(int count) {
@@ -19,6 +25,14 @@ class EnemyFleet {
             let enemies[i] = Enemy.new(startX, 30);  // Y = 30, en la parte superior de la pantalla
             let i = i + 1;
         }
+        
+        // Inicializa el sistema de movimiento
+        let moveDirection = 1;        // Comienza moviéndose a la derecha
+        let moveTimer = 0;            // Inicializa el temporizador
+        let moveDelay = 5;            // Ajustado para un movimiento más fluido
+        let movePhase = 0;            // Comienza con movimiento horizontal a la derecha
+        let horizontalStep = 8;       // Tamaño del paso horizontal
+        let verticalStep = 8;         // Tamaño del paso vertical
         
         return this;
     }
@@ -40,8 +54,87 @@ class EnemyFleet {
         return;
     }
     
-    // Método para actualizar el estado de las naves enemigas
+    // Método para update modificado para gestionar el movimiento en zigzag
     method void update() {
+        var int i;
+        var Enemy enemy;
+        var int leftmostX, rightmostX;
+        var boolean needsBounce;
+        
+        // Incrementa el temporizador de movimiento
+        let moveTimer = moveTimer + 1;
+        
+        // Si es hora de mover las naves
+        if (moveTimer > moveDelay) {
+            let moveTimer = 0;  // Reinicia el temporizador
+            let needsBounce = false;
+            
+            // Si es el movimiento horizontal (fase 0=derecha o fase 2=izquierda)
+            if ((movePhase = 0) | (movePhase = 2)) {
+                // Encuentra las posiciones extremas de la flota (solo naves activas)
+                let leftmostX = 512;
+                let rightmostX = 0;
+                
+                let i = 0;
+                while (i < enemyCount) {
+                    let enemy = enemies[i];
+                    if (enemy.isActive()) {
+                        if (enemy.getX() < leftmostX) {
+                            let leftmostX = enemy.getX();
+                        }
+                        if ((enemy.getX() + enemy.getWidth()) > rightmostX) {
+                            let rightmostX = enemy.getX() + enemy.getWidth();
+                        }
+                    }
+                    let i = i + 1;
+                }
+                
+                // Comprueba si la flota ha alcanzado los límites laterales y necesita rebotar
+                if (((movePhase = 0) & (rightmostX > 490)) | 
+                    ((movePhase = 2) & (leftmostX < 20))) {
+                    let needsBounce = true;
+                }
+            }
+            
+            // Mueve todas las naves activas según la fase actual
+            let i = 0;
+            while (i < enemyCount) {
+                let enemy = enemies[i];
+                if (enemy.isActive()) {
+                    if (movePhase = 0) {
+                        // Fase 0: Derecha
+                        do enemy.move(horizontalStep, 0);
+                    } else {
+                        if (movePhase = 1) {
+                            // Fase 1: Abajo
+                            do enemy.move(0, verticalStep);
+                        } else {
+                            if (movePhase = 2) {
+                                // Fase 2: Izquierda
+                                do enemy.move(-horizontalStep, 0);
+                            } else {
+                                // Fase 3: Abajo nuevamente
+                                do enemy.move(0, verticalStep);
+                            }
+                        }
+                    }
+                }
+                let i = i + 1;
+            }
+            
+            // Avanza a la siguiente fase del zigzag
+            if (needsBounce) {
+                // Si está en un límite lateral, forzar fase de bajada 
+                let movePhase = 1; // Ir a fase abajo
+            } else {
+                // Avanza a la siguiente fase normalmente
+                let movePhase = movePhase + 1;
+                if (movePhase > 3) { // Asegúrate de volver a la fase 0
+                    let movePhase = 0;
+                }
+            }
+        }
+        
         return;
     }
     

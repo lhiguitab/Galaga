@@ -218,6 +218,71 @@ class SpaceGame {
         return;
     }
 
+    // Método para comprobar si alguna nave enemiga ha llegado demasiado abajo
+    method boolean checkEnemiesReachedBottom() {
+        var int i;
+        var Enemy enemy;
+        var boolean reachedBottom;
+        
+        let reachedBottom = false;
+        
+        let i = 0;
+        while (i < enemyCount) {
+            let enemy = enemies.getEnemy(i);
+            if (enemy.isActive() & (enemy.getY() > 200)) {
+                let reachedBottom = true;
+            }
+            let i = i + 1;
+        }
+        
+        return reachedBottom;
+    }
+    
+    // Método update modificado para integrar la detección
+    method void update() {
+        var int i;
+        var Bullet bullet;
+        
+        // Actualiza la posición de la nave según la dirección
+        if (direction = -1) {
+            do ship.moveLeft();
+        }
+        if (direction = 1) {
+            do ship.moveRight();
+        }
+        
+        // Actualiza las naves enemigas
+        do enemies.update();
+        
+        // Comprueba si las naves enemigas han llegado demasiado abajo
+        if (checkEnemiesReachedBottom()) {
+            // Aquí podrías implementar "Game Over" o una penalización
+            // Por ejemplo: let exit = true;
+        }
+        
+        // Actualiza las balas y comprueba colisiones
+        let i = 0;
+        while (i < maxBullets) {
+            if (~(bullets[i] = null)) {
+                let bullet = bullets[i];
+                if (bullet.isActive()) {
+                    do bullet.update();
+                    
+                    // Comprueba colisiones con enemigos
+                    do checkBulletCollisions(i);
+                }
+            }
+            let i = i + 1;
+        }
+        
+        // Reduce el contador de cooldown
+        if (currentCooldown > 0) {
+            let currentCooldown = currentCooldown - 1;
+        }
+
+        return;
+    }
+
     // Método para dibujar la pantalla
     method void draw() {
         var int i;
@@ -244,8 +309,8 @@ class SpaceGame {
             let i = i + 1;
         }
 
-        // Espera un poco para que la animación sea visible
-        do Sys.wait(50);
+        // Espera para animación
+        do Sys.wait(30);
 
         return;
     }

@@ -10,7 +10,7 @@ class Enemy {
         let y = Ay;
         let width = 16;      // Ancho aproximado basado en el dibujo
         let height = 16;     // Alto aproximado basado en el dibujo
-        let speed = 2;       // Velocidad de movimiento
+        let speed = 8;       // Velocidad de movimiento
         let active = true;   // La nave está activa al crearse
         
         return this;
@@ -22,8 +22,30 @@ class Enemy {
         return;
     }
 
-    // Ya no necesitamos el método de movimiento
-    method void move() {
+    // Método para mover la nave con un movimiento más preciso
+    method void move(int hStep, int vStep) {
+        // hStep: pasos horizontales (positivo = derecha, negativo = izquierda)
+        // vStep: pasos verticales hacia abajo
+        
+        // Movimiento horizontal
+        let x = x + hStep;
+        
+        // Movimiento vertical
+        let y = y + vStep;
+        
+        // Limitar dentro de los bordes de la pantalla
+        if (x < 0) {
+            let x = 0;
+        }
+        if ((x + width) > 512) {
+            let x = 512 - width;
+        }
+        
+        // Si llega demasiado abajo en la pantalla - opcional
+        if (y > 200) {
+            // La lógica para cuando llegan al fondo está en SpaceGame
+        }
+        
         return;
     }
 
@@ -69,11 +91,25 @@ class Enemy {
     // Getters
     method int getX() { return x; }
     method int getY() { return y; }
+    method int getWidth() { return width; }
+    method int getHeight() { return height; }
     method boolean isActive() { return active; }
     
     // Setter para desactivar la nave
     method void setInactive() {
         let active = false;
+        return;
+    }
+    
+    // Setter para posición X
+    method void setX(int newX) {
+        let x = newX;
+        return;
+    }
+    
+    // Setter para posición Y
+    method void setY(int newY) {
+        let y = newY;
         return;
     }
 }
