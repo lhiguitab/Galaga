@@ -7,6 +7,8 @@ class EnemyFleet {
     field int movePhase;     // Fase del movimiento zigzag: 0=derecha, 1=abajo, 2=izquierda, 3=abajo
     field int horizontalStep;// Tamaño del paso horizontal
     field int verticalStep;  // Tamaño del paso vertical
+    field int attackTimer;
+    field int attackInterval;
     
     // Constructor
     constructor EnemyFleet new(int count) {
@@ -33,6 +35,8 @@ class EnemyFleet {
         let movePhase = 0;            // Comienza con movimiento horizontal a la derecha
         let horizontalStep = 8;       // Tamaño del paso horizontal
         let verticalStep = 8;         // Tamaño del paso vertical
+        let attackTimer = 0;
+        let attackInterval = 20; // Más frecuente
         
         return this;
     }
@@ -60,6 +64,7 @@ class EnemyFleet {
         var Enemy enemy;
         var int leftmostX, rightmostX;
         var boolean needsBounce;
+        var int attacker;
         
         // Incrementa el temporizador de movimiento
         let moveTimer = moveTimer + 1;
@@ -90,9 +95,24 @@ class EnemyFleet {
                 }
                 
                 // Comprueba si la flota ha alcanzado los límites laterales y necesita rebotar
-                if (((movePhase = 0) & (rightmostX > 490)) | 
+                if (((movePhase = 0) & (~(rightmostX < 491))) | 
                     ((movePhase = 2) & (leftmostX < 20))) {
                     let needsBounce = true;
+                }
+            }
+            
+            // Ataque especial: cada attackInterval ciclos, varios enemigos pueden atacar
+            let attackTimer = attackTimer + 1;
+            if (~(attackTimer < attackInterval)) {
+                let attackTimer = 0;
+                let attacker = 0;
+                while (attacker < enemyCount) {
+                    let enemy = enemies[attacker];
+                    // Simula aleatoriedad: solo algunos atacan cada vez
+                    if (enemy.isActive() & (~enemy.isAttacking()) & (((attacker + attackTimer) & 1) = 0)) {
+                        do enemy.startAttack();
+                    }
+                    let attacker = attacker + 1;
                 }
             }
             
@@ -101,26 +121,35 @@ class EnemyFleet {
             while (i < enemyCount) {
                 let enemy = enemies[i];
                 if (enemy.isActive()) {
-                    if (movePhase = 0) {
-                        // Fase 0: Derecha
-                        do enemy.move(horizontalStep, 0);
+                    if (enemy.isAttacking()) {
+                        // Movimiento de ataque especial
+                        do enemy.move(0, enemy.getAttackSpeed());
+                        if (enemy.getY() > 220) {
+                            do enemy.setY(30);
+                            do enemy.stopAttack();
+                        }
                     } else {
-                        if (movePhase = 1) {
-                            // Fase 1: Abajo
-                            do enemy.move(0, verticalStep);
+                        if (movePhase = 0) {
+                            // Fase 0: Derecha
+                            do enemy.move(horizontalStep, 0);
                         } else {
-                            if (movePhase = 2) {
-                                // Fase 2: Izquierda
-                                do enemy.move(-horizontalStep, 0);
-                            } else {
-                                // Fase 3: Abajo nuevamente
+                            if (movePhase = 1) {
+                                // Fase 1: Abajo
                                 do enemy.move(0, verticalStep);
+                            } else {
+                                if (movePhase = 2) {
+                                    // Fase 2: Izquierda
+                                    do enemy.move(-horizontalStep, 0);
+                                } else {
+                                    // Fase 3: Abajo nuevamente
+                                    do enemy.move(0, verticalStep);
+                                }
                             }
                         }
-                    }
-                    // Si el enemigo llega al fondo, reaparece arriba
-                    if (enemy.getY() > 220) {
-                        do enemy.setY(30);
+                        // Si el enemigo llega al fondo, reaparece arriba
+                        if (enemy.getY() > 220) {
+                            do enemy.setY(30);
+                        }
                     }
                 }
                 let i = i + 1;

@@ -3,6 +3,8 @@ class Enemy {
     field int width, height; // Dimensiones de la nave
     field int speed;         // Velocidad de movimiento
     field boolean active;    // Indica si la nave está activa
+    field boolean attacking; // Indica si el enemigo está en modo ataque especial
+    field int attackSpeed;   // Velocidad de ataque especial
 
     // Constructor
     constructor Enemy new(int Ax, int Ay) {
@@ -12,7 +14,8 @@ class Enemy {
         let height = 16;     // Alto aproximado basado en el dibujo
         let speed = 8;       // Velocidad de movimiento
         let active = true;   // La nave está activa al crearse
-        
+        let attacking = false;
+        let attackSpeed = 20;
         return this;
     }
 
@@ -109,5 +112,25 @@ class Enemy {
     method void setY(int newY) {
         let y = newY;
         return;
+    }
+
+    // Métodos para activar/desactivar ataque especial
+    method void startAttack() {
+        let attacking = true;
+        return;
+    }
+    method void stopAttack() {
+        let attacking = false;
+        return;
+    }
+    method boolean isAttacking() {
+        return attacking;
+    }
+    method void setAttackSpeed(int s) {
+        let attackSpeed = s;
+        return;
+    }
+    method int getAttackSpeed() {
+        return attackSpeed;
     }
 }
