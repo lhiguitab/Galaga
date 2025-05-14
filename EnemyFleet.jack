@@ -118,6 +118,10 @@ class EnemyFleet {
                             }
                         }
                     }
+                    // Si el enemigo llega al fondo, reaparece arriba
+                    if (enemy.getY() > 220) {
+                        do enemy.setY(30);
+                    }
                 }
                 let i = i + 1;
             }

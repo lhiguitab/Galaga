@@ -25,7 +25,7 @@ class SpaceGame {
         let ship = Ship.new(256, 220);  // x=256 (centro), y=220 (cerca del fondo)
         let direction = 0;
         let exit = false;
-        let enemyCount = 5;      // Horda de 5 naves enemigas en la parte superior
+        let enemyCount = 10;      // Horda de 10 naves enemigas en la parte superior
         
         // Inicializa la flota de naves enemigas estáticas en la parte superior
         let enemies = EnemyFleet.new(enemyCount);
@@ -165,6 +165,7 @@ class SpaceGame {
     method void update() {
         var int i;
         var Bullet bullet;
+        var Enemy enemy;
         
         // Actualiza la posición de la nave según la dirección
         if (direction = -1) {
@@ -176,6 +177,22 @@ class SpaceGame {
         
         // Actualiza las naves enemigas
         do enemies.update();
+        
+        // Colisión entre nave y enemigos
+        let i = 0;
+        while (i < enemyCount) {
+            let enemy = enemies.getEnemy(i);
+            if (enemy.isActive()) {
+                // Detección de colisión simple (rectángulo)
+                if ((ship.getX() < (enemy.getX() + enemy.getWidth())) &
+                    ((ship.getX() + ship.getWidth()) > enemy.getX()) &
+                    (ship.getY() < (enemy.getY() + enemy.getHeight())) &
+                    ((ship.getY() + ship.getHeight()) > enemy.getY())) {
+                    let exit = true;
+                }
+            }
+            let i = i + 1;
+        }
         
         // Disparo enemigo
         do enemyFire();
