@@ -10,6 +10,12 @@ class SpaceGame {
     field int enemyCount;        // Número de naves enemigas
     field int cooldown;          // Tiempo de espera entre disparos
     field int currentCooldown;   // Contador actual del tiempo de espera
+    field Array enemyBullets;      // Array para balas enemigas
+    field int maxEnemyBullets;     // Máximo de balas enemigas simultáneas
+    field int enemyBulletCount;    // Número actual de balas enemigas
+    field int enemyFireCooldown;   // Tiempo entre disparos enemigos
+    field int currentEnemyCooldown;// Contador de cooldown enemigo
+    field int lastShooter;
 
     // Constructor
     constructor SpaceGame new() {
@@ -35,6 +41,19 @@ class SpaceGame {
             let bullets[i] = null;
             let i = i + 1;
         }
+        
+        // Inicializa balas enemigas
+        let maxEnemyBullets = 10;
+        let enemyBulletCount = 0;
+        let enemyBullets = Array.new(maxEnemyBullets);
+        let enemyFireCooldown = 20;
+        let currentEnemyCooldown = 0;
+        let i = 0;
+        while (i < maxEnemyBullets) {
+            let enemyBullets[i] = null;
+            let i = i + 1;
+        }
+        let lastShooter = 0;
         
         // Configura el tiempo de espera entre disparos (cooldown)
         let cooldown = 10;       // 10 ciclos de juego entre disparos
@@ -158,6 +177,15 @@ class SpaceGame {
         // Actualiza las naves enemigas
         do enemies.update();
         
+        // Disparo enemigo
+        do enemyFire();
+        
+        // Comprueba si las naves enemigas han llegado demasiado abajo
+        if (checkEnemiesReachedBottom()) {
+            // Aquí podrías implementar "Game Over" o una penalización
+            // Por ejemplo: let exit = true;
+        }
+        
         // Actualiza las balas y comprueba colisiones
         let i = 0;
         while (i < maxBullets) {
@@ -165,17 +193,30 @@ class SpaceGame {
                 let bullet = bullets[i];
                 if (bullet.isActive()) {
                     do bullet.update();
-                    
-                    // Comprueba colisiones con enemigos
-                    do checkBulletCollisions(i);
+                    // Si la bala sale de la pantalla por arriba, libérala
+                    if (bullet.getY() < 0) {
+                        do bullet.dispose();
+                        let bullets[i] = null;
+                    } else {
+                        // Comprueba colisiones con enemigos
+                        do checkBulletCollisions(i);
+                    }
                 }
             }
             let i = i + 1;
         }
         
+        // Actualiza balas enemigas
+        do updateEnemyBullets();
+        
         // Reduce el contador de cooldown
         if (currentCooldown > 0) {
             let currentCooldown = currentCooldown - 1;
+        }
+        
+        // Reduce el cooldown de disparo enemigo
+        if (currentEnemyCooldown > 0) {
+            let currentEnemyCooldown = currentEnemyCooldown - 1;
         }
 
         return;
@@ -237,51 +278,6 @@ class SpaceGame {
         
         return reachedBottom;
     }
-    
-    // Método update modificado para integrar la detección
-    method void update() {
-        var int i;
-        var Bullet bullet;
-        
-        // Actualiza la posición de la nave según la dirección
-        if (direction = -1) {
-            do ship.moveLeft();
-        }
-        if (direction = 1) {
-            do ship.moveRight();
-        }
-        
-        // Actualiza las naves enemigas
-        do enemies.update();
-        
-        // Comprueba si las naves enemigas han llegado demasiado abajo
-        if (checkEnemiesReachedBottom()) {
-            // Aquí podrías implementar "Game Over" o una penalización
-            // Por ejemplo: let exit = true;
-        }
-        
-        // Actualiza las balas y comprueba colisiones
-        let i = 0;
-        while (i < maxBullets) {
-            if (~(bullets[i] = null)) {
-                let bullet = bullets[i];
-                if (bullet.isActive()) {
-                    do bullet.update();
-                    
-                    // Comprueba colisiones con enemigos
-                    do checkBulletCollisions(i);
-                }
-            }
-            let i = i + 1;
-        }
-        
-        // Reduce el contador de cooldown
-        if (currentCooldown > 0) {
-            let currentCooldown = currentCooldown - 1;
-        }
-
-        return;
-    }
 
     // Método para dibujar la pantalla
     method void draw() {
@@ -297,7 +293,7 @@ class SpaceGame {
         // Dibuja las naves enemigas
         do enemies.draw();
         
-        // Dibuja las balas activas
+        // Dibuja las balas activas del jugador
         let i = 0;
         while (i < maxBullets) {
             if (~(bullets[i] = null)) {
@@ -308,10 +304,105 @@ class SpaceGame {
             }
             let i = i + 1;
         }
+        
+        // Dibuja las balas enemigas
+        let i = 0;
+        while (i < maxEnemyBullets) {
+            if (~(enemyBullets[i] = null)) {
+                let bullet = enemyBullets[i];
+                if (bullet.isActive()) {
+                    do bullet.draw();
+                }
+            }
+            let i = i + 1;
+        }
 
         // Espera para animación
         do Sys.wait(30);
 
+        return;
+    }
+
+    // Método para que los enemigos disparen
+    method void enemyFire() {
+        var int i, shooter, j, nextShooter;
+        var Enemy enemy;
+        var Bullet newBullet;
+
+        if (currentEnemyCooldown > 0) {
+            return;
+        }
+
+        // Disparo secuencial: busca el siguiente enemigo activo en orden cíclico
+        let shooter = lastShooter;
+        let i = 0;
+        while (i < enemyCount) {
+            let enemy = enemies.getEnemy(shooter);
+            if (enemy.isActive()) {
+                let j = 0;
+                while (j < maxEnemyBullets) {
+                    if (enemyBullets[j] = null) {
+                        let newBullet = Bullet.new(enemy.getX() + 8, enemy.getY() + 16);
+                        let enemyBullets[j] = newBullet;
+                        let currentEnemyCooldown = enemyFireCooldown;
+                        let nextShooter = shooter + 1;
+                        if (nextShooter < enemyCount) {
+                            let lastShooter = nextShooter;
+                        }
+                        if (~(nextShooter < enemyCount)) {
+                            let lastShooter = 0;
+                        }
+                        return;
+                    }
+                    let j = j + 1;
+                }
+                // Si no hay espacio para balas, igual avanza el turno
+                let nextShooter = shooter + 1;
+                if (nextShooter < enemyCount) {
+                    let lastShooter = nextShooter;
+                }
+                if (~(nextShooter < enemyCount)) {
+                    let lastShooter = 0;
+                }
+                return;
+            }
+            let shooter = shooter + 1;
+            if (shooter = enemyCount) {
+                let shooter = 0;
+            }
+            let i = i + 1;
+        }
+        return;
+    }
+
+    // Método para actualizar las balas enemigas
+    method void updateEnemyBullets() {
+        var int i, bulletY, bulletSpeed, newY;
+        var Bullet bullet;
+
+        let i = 0;
+        while (i < maxEnemyBullets) {
+            if (~(enemyBullets[i] = null)) {
+                let bullet = enemyBullets[i];
+                if (bullet.isActive()) {
+                    // Mueve la bala hacia abajo
+                    let bulletY = bullet.getY();
+                    let bulletSpeed = 10;
+                    let newY = bulletY + bulletSpeed;
+                    if (newY > 256) {
+                        do bullet.dispose();
+                        let enemyBullets[i] = null;
+                    } else {
+                        do bullet.setY(newY);
+                    }
+                    // Colisión con la nave del jugador
+                    if (bullet.checkCollision(ship.getX(), ship.getY(), ship.getWidth(), ship.getHeight())) {
+                        let exit = true;
+                    }
+                }
+            }
+            let i = i + 1;
+        }
         return;
     }
 

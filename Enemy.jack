@@ -52,13 +52,11 @@ class Enemy {
     // Método para dibujar la nave enemiga
     method void draw() {
         var int location;
-        
-        // Calcula la ubicación en memoria basada en las coordenadas x,y
-        let location = (y * 32) + (x / 16);
-        
-        // Dibuja la nave usando el patrón proporcionado
-        do Enemy.drawEnemy(location); 
-        
+        // Solo dibuja si está dentro de la pantalla
+        if ((~(y < 0)) & (y < 256) & (~(x < 0)) & (x < 512)) {
+            let location = (y * 32) + (x / 16);
+            do Enemy.drawEnemy(location);
+        }
         return;
     }
     

@@ -38,11 +38,12 @@ class Bullet {
     // Método para dibujar el disparo
     method void draw() {
         var int location;
-        
         if (active) {
-            // Calcula la ubicación en memoria
-            let location = (y * 32) + (x / 16);
-            do drawBullet(location);
+            // Solo dibuja si está dentro de la pantalla (y <= 251 para que el sprite completo quepa)
+            if ((~(y < 0)) & (~(251 < y)) & (~(x < 0)) & (x < 512)) {
+                let location = (y * 32) + (x / 16);
+                do drawBullet(location);
+            }
         }
         return;
     }
@@ -96,5 +97,11 @@ class Bullet {
     
     method int getY() {
         return y;
+    }
+
+    // Setter para posición Y (para balas enemigas)
+    method void setY(int newY) {
+        let y = newY;
+        return;
     }
 }
